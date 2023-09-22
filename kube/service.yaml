@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: front-service-service
+spec:
+  selector:
+    app: front-service-deployment
+  ports:
+    - protocol: TCP
+      port: 30002
+      targetPort: 30002
