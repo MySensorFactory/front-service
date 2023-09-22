@@ -1,0 +1,29 @@
+server:
+  port: 9399
+  cloud:
+    gateway:
+      routes:
+        - id: data-service
+          uri: http://localhost:9099
+          predicates:
+            - Path=/data/**
+          filters:
+            - RewritePath=/data/(?<path>.*), /$\{path}
+  datasource:
+    url: jdbc:postgresql://localhost:5432/compose-postgres
+    username: compose-postgres
+    password: compose-postgres
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+clients:
+  user:
+    url: localhost:9299
+  data:
+
+app:
+  jwtSecret: abc123sajdfisadnfuisndufinhdssvfmdsaiofnhuad9fhuew0nio9adnhfi9oeqfoadnvfopgkmpwomgi0mgisofmgifsogmfdi0ognm53490hg3u9nh3nhe9tighkjr23423432rt2g54y45h45yh4egergh35gerg35h4rth
+  jwtExpirationInMs: 600000
