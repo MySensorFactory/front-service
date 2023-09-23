@@ -5,19 +5,22 @@ import com.factory.openapi.api.LoginApi;
 import com.factory.security.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequiredArgsConstructor
-public class AuthController implements LoginApi {
+public class AuthController {
 
     public static final String ACCESS_TOKEN = "Access-Token";
     public static final String REFRESH_TOKEN = "Refresh-Token";
     private final AuthenticationService authenticationService;
 
-    @Override
-    public ResponseEntity<Void> login(final String authData) {
-        return null;
+    //    @Override
+    @PostMapping("/login")
+    public Mono<ResponseEntity<Void>> login(final String authData) {
+        return Mono.empty();
     }
 
     @Override

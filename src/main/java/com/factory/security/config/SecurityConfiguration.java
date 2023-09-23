@@ -1,34 +1,38 @@
 package com.factory.security.config;
 
-import com.factory.security.config.filter.AuthenticationJwtTokenFilter;
-import com.factory.security.config.filter.ProcessingJwtTokenFilter;
+import com.factory.security.config.filter.AuthenticationJwtTokenWebFilter;
 import com.factory.security.config.handler.CustomAccessDeniedHandler;
 import com.factory.security.config.handler.CustomAuthenticationFailureHandler;
 import com.factory.security.config.handler.CustomLogoutSuccessHandler;
+import com.factory.security.repository.SecurityContextRepository;
 import com.factory.security.service.JwtTokenProvider;
+import com.factory.security.service.RemoteUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.server.SecurityWebFilterChain;
+import reactor.core.publisher.Mono;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 @RequiredArgsConstructor
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class SecurityConfiguration {
 
-    private final UserDetailsService userDetailsService;
-    private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final ReactiveAuthenticationManager authenticationManager;
+    private final SecurityContextRepository securityContextRepository;
+    private final RemoteUserDetailsService remoteUserDetailsService;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     public LogoutSuccessHandler logoutSuccessHandler() {
@@ -45,39 +49,38 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return new CustomAuthenticationFailureHandler();
     }
 
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
-
-    @Override
-    protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
-        auth
-                .userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder);
-    }
-
     // @formatter:off
-    @Override
-    protected void configure(final HttpSecurity http) throws Exception {
-        var authenticationJwtTokenFilter = new AuthenticationJwtTokenFilter(authenticationManagerBean(), jwtTokenProvider);
-        http
+    @Bean
+    public SecurityWebFilterChain securitygWebFilterChain(final ServerHttpSecurity http) {
+        var authenticationJwtTokenFilter = new AuthenticationJwtTokenWebFilter(jwtTokenProvider, remoteUserDetailsService, passwordEncoder);
+        return http
                 .csrf().disable()
-                .authorizeRequests()
-                    .antMatchers("/admin/**").hasRole("ADMIN")
-                    .antMatchers("/counted-words").hasRole("DATA_ACCESSOR")
-                    .antMatchers("/counted-words/**").hasRole("DATA_ACCESSOR")
-                    .antMatchers("/login").permitAll()
-                    .antMatchers("/login/**").permitAll()
-                    .antMatchers("/refresh").permitAll()
-                    .antMatchers("/refresh/**").permitAll()
-                    .antMatchers("/v3/**").permitAll()
-                    .anyRequest().authenticated()
+                .exceptionHandling()
+                    .authenticationEntryPoint((swe, e) ->
+                            Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED))
+                    ).accessDeniedHandler((swe, e) ->
+                            Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN))
+                ).and()
+                .formLogin().disable()
+                .httpBasic().disable()
+                .authenticationManager(authenticationManager)
+                .securityContextRepository(securityContextRepository)
+                .authorizeExchange()
+                    .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                    .pathMatchers("/login").permitAll()
+                    .pathMatchers("/login/**").permitAll()
+                    .pathMatchers("/refresh").permitAll()
+                    .pathMatchers("/refresh/**").permitAll()
+                    .pathMatchers("/v3/**").permitAll()
+//                    .pathMatchers("/counted-words").hasRole("DATA_ACCESSOR")
+//                    .pathMatchers("/counted-words/**").hasRole("DATA_ACCESSOR")
+                    .anyExchange().authenticated()
                 .and()
-                .addFilter(authenticationJwtTokenFilter)
-                .addFilterBefore(new ProcessingJwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
-                .httpBasic();
+                .addFilterAt(authenticationJwtTokenFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+//                .addFilterBefore(new ProcessingJwtTokenWebFilter(jwtTokenProvider), SecurityWebFiltersOrder.AUTHENTICATION)
+//                .addFilter(authenticationJwtTokenFilter)
+//                .addFilterBefore(new ProcessingJwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
     // @formatter:on
 }

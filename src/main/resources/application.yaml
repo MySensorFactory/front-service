@@ -1,5 +1,8 @@
 server:
   port: 9399
+spring:
+  main:
+    web-application-type: reactive
   cloud:
     gateway:
       routes:
@@ -21,8 +24,7 @@ server:
       ddl-auto: none
 clients:
   user:
-    url: localhost:9299
-  data:
+    url: http://localhost:9299
 
 app:
   jwtSecret: abc123sajdfisadnfuisndufinhdssvfmdsaiofnhuad9fhuew0nio9adnhfi9oeqfoadnvfopgkmpwomgi0mgisofmgifsogmfdi0ognm53490hg3u9nh3nhe9tighkjr23423432rt2g54y45h45yh4egergh35gerg35h4rth
