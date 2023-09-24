@@ -1,4 +1,4 @@
-package com.factory.controller;
+package com.factory.exception;
 
 import org.springframework.security.core.AuthenticationException;
 
