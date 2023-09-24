@@ -35,21 +35,6 @@ public class SecurityConfiguration {
     private final RemoteUserDetailsService remoteUserDetailsService;
     private final ApiGatewayConfiguration apiGatewayConfiguration;
 
-    @Bean
-    public LogoutSuccessHandler logoutSuccessHandler() {
-        return new CustomLogoutSuccessHandler();
-    }
-
-    @Bean
-    public AccessDeniedHandler accessDeniedHandler() {
-        return new CustomAccessDeniedHandler();
-    }
-
-    @Bean
-    public AuthenticationFailureHandler authenticationFailureHandler() {
-        return new CustomAuthenticationFailureHandler();
-    }
-
     // @formatter:off
     @Bean
     public SecurityWebFilterChain securitygWebFilterChain(final ServerHttpSecurity http) {
