@@ -5,6 +5,7 @@ import com.factory.security.config.dto.RefreshToken;
 import com.factory.security.config.dto.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -56,6 +58,9 @@ public class JwtTokenProvider {
                 .parseClaimsJws(accessToken.getToken())
                 .getBody();
         List<Map<String, String>> roles = (List<Map<String, String>>) claims.get(ROLES);
+        if (Objects.isNull(roles)){
+            throw new MalformedJwtException("Cannot read roles");
+        }
         user.setRoles(roles.stream().map(entry -> entry.get(AUTHORITY)).collect(Collectors.toSet()));
         user.setName(claims.getSubject());
         return user;

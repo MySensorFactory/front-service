@@ -1,6 +1,8 @@
 package com.factory.security.config;
 
+import com.factory.config.ApiGatewayConfiguration;
 import com.factory.security.config.filter.AuthenticationJwtTokenWebFilter;
+import com.factory.security.config.filter.ProcessingJwtTokenWebFilter;
 import com.factory.security.config.handler.CustomAccessDeniedHandler;
 import com.factory.security.config.handler.CustomAuthenticationFailureHandler;
 import com.factory.security.config.handler.CustomLogoutSuccessHandler;
@@ -16,7 +18,6 @@ import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
@@ -32,7 +33,7 @@ public class SecurityConfiguration {
     private final ReactiveAuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository;
     private final RemoteUserDetailsService remoteUserDetailsService;
-    private final PasswordEncoder passwordEncoder;
+    private final ApiGatewayConfiguration apiGatewayConfiguration;
 
     @Bean
     public LogoutSuccessHandler logoutSuccessHandler() {
@@ -52,7 +53,6 @@ public class SecurityConfiguration {
     // @formatter:off
     @Bean
     public SecurityWebFilterChain securitygWebFilterChain(final ServerHttpSecurity http) {
-        var authenticationJwtTokenFilter = new AuthenticationJwtTokenWebFilter(jwtTokenProvider, remoteUserDetailsService, passwordEncoder);
         return http
                 .csrf().disable()
                 .exceptionHandling()
@@ -76,10 +76,10 @@ public class SecurityConfiguration {
 //                    .pathMatchers("/counted-words/**").hasRole("DATA_ACCESSOR")
                     .anyExchange().authenticated()
                 .and()
-                .addFilterAt(authenticationJwtTokenFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-//                .addFilterBefore(new ProcessingJwtTokenWebFilter(jwtTokenProvider), SecurityWebFiltersOrder.AUTHENTICATION)
-//                .addFilter(authenticationJwtTokenFilter)
-//                .addFilterBefore(new ProcessingJwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(new AuthenticationJwtTokenWebFilter(jwtTokenProvider, remoteUserDetailsService),
+                        SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterBefore(new ProcessingJwtTokenWebFilter(authenticationManager, apiGatewayConfiguration.pathConfig()),
+                        SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
     // @formatter:on

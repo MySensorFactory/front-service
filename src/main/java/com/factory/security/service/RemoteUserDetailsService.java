@@ -1,7 +1,7 @@
 package com.factory.security.service;
 
 import com.factory.client.UsersClient;
-import com.factory.controller.PasswordAuthException;
+import com.factory.exception.PasswordAuthException;
 import com.factory.security.config.dto.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
