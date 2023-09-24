@@ -9,8 +9,6 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -22,7 +20,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
 public class AuthenticationJwtTokenWebFilter implements WebFilter {
 
     public static final String AUTH_DATA = "Auth-Data";
@@ -31,23 +28,15 @@ public class AuthenticationJwtTokenWebFilter implements WebFilter {
     public static final String REFRESH_TOKEN = "Refresh-Token";
     private final JwtTokenProvider jwtTokenProvider;
     private final RemoteUserDetailsService remoteUserDetailsService;
-    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        //TODO: sprawdzic, czy po prostu jest w headerze auth-token
-//        if (!requiresAuthentication(request, response)) {
-//            chain.filter(exchange);
-//            return Mono.empty();
-//        }
+    public Mono<Void> filter(final ServerWebExchange exchange,final WebFilterChain chain) {
+        var request = exchange.getRequest();
+        var response = exchange.getResponse();
 
-//        Mono<UserDetails> user = attemptAuthentication(exchange.getRequest());
-//        successfulAuthentication(exchange.getResponse(), user);
-//        return Mono.empty();
-
-
-        ServerHttpRequest request = exchange.getRequest();
-        ServerHttpResponse response = exchange.getResponse();
+        if (!requiresAuthentication(request)) {
+            return chain.filter(exchange);
+        }
 
         return attemptAuthentication(request)
                 .flatMap(userDetails -> {
@@ -57,12 +46,16 @@ public class AuthenticationJwtTokenWebFilter implements WebFilter {
                 .onErrorResume(Mono::error);
     }
 
-    public Mono<UserDetails> attemptAuthentication(final ServerHttpRequest request)
+    private boolean requiresAuthentication(final ServerHttpRequest request) {
+        return !request.getHeaders().containsKey(ACCESS_TOKEN);
+    }
+
+    private Mono<UserDetails> attemptAuthentication(final ServerHttpRequest request)
             throws AuthenticationException {
         String[] decodedToken = decodeAuthDataToken(request);
         String username = getUsername(decodedToken);
         String password = getPassword(decodedToken);
-        return remoteUserDetailsService.loadUser(username,password);
+        return remoteUserDetailsService.loadUser(username, password);
     }
 
     private String getPassword(final String[] decodedToken) {
