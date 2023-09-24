@@ -1,6 +1,8 @@
 package com.factory.security.config;
 
+import com.factory.security.config.model.JwtConfig;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,5 +15,11 @@ public class SecurityUtilsConfiguration {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
+    }
+
+    @Bean
+    @ConfigurationProperties("jwt")
+    public JwtConfig jwtConfig(){
+        return new JwtConfig();
     }
 }

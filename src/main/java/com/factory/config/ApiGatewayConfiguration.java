@@ -12,4 +12,10 @@ public class ApiGatewayConfiguration {
     public PathConfig pathConfig(){
         return new PathConfig();
     }
+
+    @Bean
+    @ConfigurationProperties("clients.user")
+    public UsersClientConfig usersClientConfig(){
+        return new UsersClientConfig();
+    }
 }
