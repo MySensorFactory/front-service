@@ -1,6 +1,6 @@
 package com.factory.security.config.manager;
 
-import com.factory.security.config.dto.AccessToken;
+import com.factory.security.dto.AccessToken;
 import com.factory.security.service.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;

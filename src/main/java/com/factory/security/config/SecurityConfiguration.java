@@ -3,9 +3,6 @@ package com.factory.security.config;
 import com.factory.config.ApiGatewayConfiguration;
 import com.factory.security.config.filter.AuthenticationJwtTokenWebFilter;
 import com.factory.security.config.filter.ProcessingJwtTokenWebFilter;
-import com.factory.security.config.handler.CustomAccessDeniedHandler;
-import com.factory.security.config.handler.CustomAuthenticationFailureHandler;
-import com.factory.security.config.handler.CustomLogoutSuccessHandler;
 import com.factory.security.repository.SecurityContextRepository;
 import com.factory.security.service.JwtTokenProvider;
 import com.factory.security.service.RemoteUserDetailsService;
@@ -18,9 +15,6 @@ import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Mono;
 

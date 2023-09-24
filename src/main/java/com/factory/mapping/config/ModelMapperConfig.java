@@ -1,6 +1,6 @@
 package com.factory.mapping.config;
 
-import com.factory.security.config.dto.User;
+import com.factory.security.dto.User;
 import com.factory.openapi.model.Role;
 import com.factory.openapi.model.UserResponse;
 import org.modelmapper.AbstractConverter;

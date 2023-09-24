@@ -15,12 +15,12 @@ import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
+import static com.factory.commons.Constants.ACCESS_TOKEN;
+
 @Slf4j
 @Order(1)
 @RequiredArgsConstructor
 public class ProcessingJwtTokenWebFilter implements WebFilter {
-
-    public static final String ACCESS_TOKEN = "Access-Token";
 
     private final ReactiveAuthenticationManager authenticationManager;
     private final PathConfig pathConfig;

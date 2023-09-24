@@ -1,13 +1,14 @@
 package com.factory.security.service;
 
-import com.factory.security.config.dto.AccessToken;
-import com.factory.security.config.dto.RefreshToken;
-import com.factory.security.config.dto.User;
+import com.factory.security.config.model.JwtConfig;
+import com.factory.security.dto.AccessToken;
+import com.factory.security.dto.RefreshToken;
+import com.factory.security.dto.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -16,23 +17,22 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.factory.commons.Constants.AUTHORITY;
+import static com.factory.commons.Constants.ROLES;
+
 
 @Component
+@RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    public static final String ROLES = "roles";
-    public static final String AUTHORITY = "authority";
-    @Value("${app.jwtSecret}")
-    private String jwtSecret;
+    private final JwtConfig jwtConfig;
 
-    @Value("${app.jwtExpirationInMs}")
-    private long jwtExpirationInMs;
 
     public String generateAccessToken(final User user) {
         Date expiryDate = getExpiryDate();
 
         return Jwts.builder()
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(SignatureAlgorithm.HS512, jwtConfig.getJwtSecret())
                 .setSubject(user.getUsername())
                 .setIssuedAt(now())
                 .setExpiration(expiryDate)
@@ -46,7 +46,7 @@ public class JwtTokenProvider {
                 .setSubject(user.getUsername())
                 .setIssuedAt(now())
                 .setExpiration(getRefreshDate())
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(SignatureAlgorithm.HS512, jwtConfig.getJwtSecret())
                 .compact();
     }
 
@@ -54,7 +54,7 @@ public class JwtTokenProvider {
             throws ExpiredJwtException {
         var user = new User();
         var claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
+                .setSigningKey(jwtConfig.getJwtSecret())
                 .parseClaimsJws(accessToken.getToken())
                 .getBody();
         List<Map<String, String>> roles = (List<Map<String, String>>) claims.get(ROLES);
@@ -69,18 +69,18 @@ public class JwtTokenProvider {
     public String getUsernameFromRefreshToken(final RefreshToken refreshToken)
             throws ExpiredJwtException {
         return Jwts.parser()
-                .setSigningKey(jwtSecret)
+                .setSigningKey(jwtConfig.getJwtSecret())
                 .parseClaimsJws(refreshToken.getToken())
                 .getBody()
                 .getSubject();
     }
 
     private Date getRefreshDate() {
-        return new Date(System.currentTimeMillis() + jwtExpirationInMs * 30);
+        return new Date(System.currentTimeMillis() + jwtConfig.getJwtRefreshTokenExpirationInMs());
     }
 
     private Date getExpiryDate() {
-        return new Date(now().getTime() + jwtExpirationInMs);
+        return new Date(now().getTime() + jwtConfig.getJwtAccessTokenExpirationInMs());
     }
 
     private static Date now(){

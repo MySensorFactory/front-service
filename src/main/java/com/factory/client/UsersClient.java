@@ -1,10 +1,10 @@
 package com.factory.client;
 
+import com.factory.config.UsersClientConfig;
 import com.factory.openapi.model.UserResponse;
 import io.netty.resolver.DefaultAddressResolverGroup;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -16,11 +16,13 @@ import reactor.netty.http.client.HttpClient;
 public class UsersClient {
 
     private final WebClient client;
+    private final UsersClientConfig usersClientConfig;
 
     @Autowired
-    public UsersClient(@Value("${clients.user.url}") final String userClientUrl) {
+    public UsersClient(final UsersClientConfig config) {
+        this.usersClientConfig = config;
         client = WebClient.builder()
-                .baseUrl(userClientUrl)
+                .baseUrl(usersClientConfig.getUrl())
                 .clientConnector(new ReactorClientHttpConnector(
                                 HttpClient.create()
                                         .resolver(DefaultAddressResolverGroup.INSTANCE)
@@ -30,7 +32,7 @@ public class UsersClient {
 
     public Mono<UserResponse> getUserDetails(final String userName) {
         return client.get()
-                .uri("/users/{userName}", userName)
+                .uri(usersClientConfig.getUserDetailsPath(), userName)
                 .retrieve()
                 .bodyToMono(UserResponse.class);
     }

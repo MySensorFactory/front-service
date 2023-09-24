@@ -26,11 +26,14 @@ spring:
 config:
   publicPaths:
     - '/login'
+    - '/refresh'
 
 clients:
   user:
     url: http://localhost:9299
+    userDetailsPath: '/users/{userName}'
 
-app:
+jwt:
   jwtSecret: abc123sajdfisadnfuisndufinhdssvfmdsaiofnhuad9fhuew0nio9adnhfi9oeqfoadnvfopgkmpwomgi0mgisofmgifsogmfdi0ognm53490hg3u9nh3nhe9tighkjr23423432rt2g54y45h45yh4egergh35gerg35h4rth
-  jwtExpirationInMs: 600000
+  jwtAccessTokenExpirationInMs: 600000
+  jwtRefreshTokenExpirationInMs: 1200000

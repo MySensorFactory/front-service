@@ -1,6 +1,6 @@
 package com.factory.security.config.filter;
 
-import com.factory.security.config.dto.User;
+import com.factory.security.dto.User;
 import com.factory.security.service.JwtTokenProvider;
 import com.factory.security.service.RemoteUserDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +16,16 @@ import reactor.core.publisher.Mono;
 
 import java.util.Base64;
 
+import static com.factory.commons.Constants.ACCESS_TOKEN;
+import static com.factory.commons.Constants.AUTH_DATA;
+import static com.factory.commons.Constants.AUTH_DATA_DELIMITER;
+import static com.factory.commons.Constants.REFRESH_TOKEN;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
 @RequiredArgsConstructor
 public class AuthenticationJwtTokenWebFilter implements WebFilter {
 
-    public static final String AUTH_DATA = "Auth-Data";
-    public static final String AUTH_DATA_DELIMITER = ":";
-    public static final String ACCESS_TOKEN = "Access-Token";
-    public static final String REFRESH_TOKEN = "Refresh-Token";
     private final JwtTokenProvider jwtTokenProvider;
     private final RemoteUserDetailsService remoteUserDetailsService;
 
@@ -47,7 +47,8 @@ public class AuthenticationJwtTokenWebFilter implements WebFilter {
     }
 
     private boolean requiresAuthentication(final ServerHttpRequest request) {
-        return !request.getHeaders().containsKey(ACCESS_TOKEN);
+        return !(request.getHeaders().containsKey(ACCESS_TOKEN) ||
+                request.getHeaders().containsKey(REFRESH_TOKEN));
     }
 
     private Mono<UserDetails> attemptAuthentication(final ServerHttpRequest request)

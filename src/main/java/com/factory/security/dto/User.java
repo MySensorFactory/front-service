@@ -1,4 +1,4 @@
-package com.factory.security.config.dto;
+package com.factory.security.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
