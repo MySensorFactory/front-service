@@ -12,16 +12,18 @@ spring:
             - Path=/data/**
           filters:
             - RewritePath=/data/(?<path>.*), /$\{path}
-  datasource:
-    url: jdbc:postgresql://localhost:5432/compose-postgres
-    username: compose-postgres
-    password: compose-postgres
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: none
+        - id: data-service-documentation
+          uri: http://localhost:9099
+          predicates:
+            - Path=/docs/data
+          filters:
+            - RewritePath=/docs/data, /v3/api-docs
+        - id: users-service-documentation
+          uri: http://localhost:9299
+          predicates:
+            - Path=/docs/data
+          filters:
+            - RewritePath=/docs/data, /v3/api-docs
 
 config:
   createAccount:
