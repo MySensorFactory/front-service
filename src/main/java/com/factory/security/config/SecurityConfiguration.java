@@ -1,6 +1,7 @@
 package com.factory.security.config;
 
 import com.factory.config.ApiGatewayConfiguration;
+import com.factory.config.PathConfig;
 import com.factory.security.config.filter.AuthenticationJwtTokenWebFilter;
 import com.factory.security.config.filter.ProcessingJwtTokenWebFilter;
 import com.factory.security.repository.SecurityContextRepository;
@@ -28,6 +29,7 @@ public class SecurityConfiguration {
     private final SecurityContextRepository securityContextRepository;
     private final RemoteUserDetailsService remoteUserDetailsService;
     private final ApiGatewayConfiguration apiGatewayConfiguration;
+    private final PathConfig pathConfig;
 
     // @formatter:off
     @Bean
@@ -46,16 +48,18 @@ public class SecurityConfiguration {
                 .securityContextRepository(securityContextRepository)
                 .authorizeExchange()
                     .pathMatchers(HttpMethod.OPTIONS).permitAll()
-                    .pathMatchers("/login").permitAll()
-                    .pathMatchers("/login/**").permitAll()
-                    .pathMatchers("/refresh").permitAll()
-                    .pathMatchers("/refresh/**").permitAll()
-                    .pathMatchers("/v3/**").permitAll()
-//                    .pathMatchers("/counted-words").hasRole("DATA_ACCESSOR")
-//                    .pathMatchers("/counted-words/**").hasRole("DATA_ACCESSOR")
+                    .pathMatchers(pathConfig.getPublicPaths().toArray(new String[0])).permitAll()
+
+                    .pathMatchers("/data/**").hasRole("DATA_ACCESSOR")
+
+                    .pathMatchers(HttpMethod.GET,"/users/{userName}").authenticated()
+                    .pathMatchers(HttpMethod.PATCH, "/users/{userName}").hasRole("ADMIN")
+
+                    .pathMatchers("/roles/**").hasRole("ADMIN")
+
                     .anyExchange().authenticated()
                 .and()
-                .addFilterAt(new AuthenticationJwtTokenWebFilter(jwtTokenProvider, remoteUserDetailsService),
+                .addFilterAt(new AuthenticationJwtTokenWebFilter(jwtTokenProvider,remoteUserDetailsService, pathConfig),
                         SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterBefore(new ProcessingJwtTokenWebFilter(authenticationManager, apiGatewayConfiguration.pathConfig()),
                         SecurityWebFiltersOrder.AUTHENTICATION)
