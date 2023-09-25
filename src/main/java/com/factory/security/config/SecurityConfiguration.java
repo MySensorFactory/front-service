@@ -24,6 +24,8 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
+    public static final String ADMIN = "ADMIN";
+    public static final String DATA_ACCESSOR = "DATA_ACCESSOR";
     private final JwtTokenProvider jwtTokenProvider;
     private final ReactiveAuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository;
@@ -50,12 +52,13 @@ public class SecurityConfiguration {
                     .pathMatchers(HttpMethod.OPTIONS).permitAll()
                     .pathMatchers(pathConfig.getPublicPaths().toArray(new String[0])).permitAll()
 
-                    .pathMatchers("/data/**").hasRole("DATA_ACCESSOR")
+                    .pathMatchers("/data/**").hasRole(DATA_ACCESSOR)
 
                     .pathMatchers(HttpMethod.GET,"/users/{userName}").authenticated()
-                    .pathMatchers(HttpMethod.PATCH, "/users/{userName}").hasRole("ADMIN")
+                    .pathMatchers(HttpMethod.PATCH, "/users/{userName}").hasRole(ADMIN)
+                    .pathMatchers(HttpMethod.POST, "/users/{userName}/activate").hasRole(ADMIN)
 
-                    .pathMatchers("/roles/**").hasRole("ADMIN")
+                    .pathMatchers("/roles/**").hasRole(ADMIN)
 
                     .anyExchange().authenticated()
                 .and()

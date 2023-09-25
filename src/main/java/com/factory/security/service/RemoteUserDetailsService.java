@@ -30,8 +30,8 @@ public class RemoteUserDetailsService {
                     if (isWrongPassword(password, response)) {
                         return Mono.error(new PasswordAuthException(username));
                     }
-                    if(isUserNotActive(response)){
-                       return Mono.error(new ClientErrorException(Error.CodeEnum.INACTIVE, "User not activated"));
+                    if (isUserNotActive(response)) {
+                        return Mono.error(new ClientErrorException(Error.CodeEnum.INACTIVE, "User not activated"));
                     }
                     return Mono.just(modelMapper.map(response, User.class));
                 });
