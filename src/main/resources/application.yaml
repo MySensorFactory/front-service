@@ -24,9 +24,22 @@ spring:
       ddl-auto: none
 
 config:
+  createAccount:
+    enabled: true
+    fromPath: '/users/users'
+    toPath: '/users'
+    targetService: 'http://127.0.0.1:9299'
+  accessTokenAcquirablePaths:
+    - '/login'
+    - '/login/**'
   publicPaths:
     - '/login'
     - '/refresh'
+    - '/users/users'
+    - '/login/**'
+    - '/refresh/**'
+    - '/docs/data'
+    - '/docs/users'
 
 clients:
   user:

@@ -28,6 +28,7 @@ public class AuthenticationJwtTokenWebFilter implements WebFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RemoteUserDetailsService remoteUserDetailsService;
+    private final PathConfig pathConfig;
 
     @Override
     public Mono<Void> filter(final ServerWebExchange exchange,final WebFilterChain chain) {
@@ -47,8 +48,7 @@ public class AuthenticationJwtTokenWebFilter implements WebFilter {
     }
 
     private boolean requiresAuthentication(final ServerHttpRequest request) {
-        return !(request.getHeaders().containsKey(ACCESS_TOKEN) ||
-                request.getHeaders().containsKey(REFRESH_TOKEN));
+        return pathConfig.getAccessTokenAcquirablePaths().contains(request.getPath().value());
     }
 
     private Mono<UserDetails> attemptAuthentication(final ServerHttpRequest request)
