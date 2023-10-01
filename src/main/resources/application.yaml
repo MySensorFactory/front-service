@@ -21,9 +21,9 @@ spring:
         - id: users-service-documentation
           uri: http://localhost:9299
           predicates:
-            - Path=/docs/data
+            - Path=/docs/users
           filters:
-            - RewritePath=/docs/data, /v3/api-docs
+            - RewritePath=/docs/users, /v3/api-docs
 
 config:
   createAccount:
