@@ -2,12 +2,8 @@ package com.factory.security.config;
 
 import com.factory.config.ApiGatewayConfiguration;
 import com.factory.config.PathConfig;
-import com.factory.security.filter.AuthenticationJwtTokenWebFilter;
 import com.factory.security.filter.ProcessingJwtTokenWebFilter;
 import com.factory.security.repository.SecurityContextRepository;
-import com.factory.security.service.JwtTokenProvider;
-import com.factory.security.service.LoginAttemptsService;
-import com.factory.security.service.RemoteUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,13 +23,10 @@ public class SecurityConfiguration {
 
     public static final String ADMIN = "ADMIN";
     public static final String DATA_ACCESSOR = "DATA_ACCESSOR";
-    private final JwtTokenProvider jwtTokenProvider;
     private final ReactiveAuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository;
-    private final RemoteUserDetailsService remoteUserDetailsService;
     private final ApiGatewayConfiguration apiGatewayConfiguration;
     private final PathConfig pathConfig;
-    private final LoginAttemptsService loginAttemptsService;
 
     // @formatter:off
     @Bean
@@ -64,12 +57,6 @@ public class SecurityConfiguration {
 
                     .anyExchange().authenticated()
                 .and()
-                .addFilterAt(new AuthenticationJwtTokenWebFilter(
-                                jwtTokenProvider,
-                                remoteUserDetailsService,
-                                pathConfig,
-                                loginAttemptsService),
-                        SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterBefore(new ProcessingJwtTokenWebFilter(authenticationManager, apiGatewayConfiguration.pathConfig()),
                         SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();

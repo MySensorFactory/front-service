@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
+import static com.factory.commons.Constants.XF_HEADER_DEILMETER;
+import static com.factory.commons.Constants.X_FORWARDED_FOR;
+
 @Service
 @RequiredArgsConstructor
 public class LoginAttemptsService {
@@ -27,11 +30,10 @@ public class LoginAttemptsService {
         loginAttemptsCache.put(address, currentClientAttemptsCount + 1);
     }
 
-
     private String resolveAddress(final ServerHttpRequest request) {
-        final String xfHeader = request.getHeaders().getFirst("X-Forwarded-For");
-        if (xfHeader != null) {
-            return xfHeader.split(",")[0];
+        final String xfHeader = request.getHeaders().getFirst(X_FORWARDED_FOR);
+        if (Objects.nonNull(xfHeader)) {
+            return xfHeader.split(XF_HEADER_DEILMETER)[0];
         }
         return Objects.requireNonNull(request.getRemoteAddress()).getHostString();
     }
