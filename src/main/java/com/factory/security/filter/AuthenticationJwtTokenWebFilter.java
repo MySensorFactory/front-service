@@ -1,8 +1,12 @@
-package com.factory.security.config.filter;
+package com.factory.security.filter;
 
 import com.factory.config.PathConfig;
+import com.factory.exception.ClientErrorException;
+import com.factory.exception.PasswordAuthException;
+import com.factory.openapi.model.Error;
 import com.factory.security.dto.User;
 import com.factory.security.service.JwtTokenProvider;
+import com.factory.security.service.LoginAttemptsService;
 import com.factory.security.service.RemoteUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,14 +34,19 @@ public class AuthenticationJwtTokenWebFilter implements WebFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final RemoteUserDetailsService remoteUserDetailsService;
     private final PathConfig pathConfig;
+    private final LoginAttemptsService loginAttemptsService;
 
     @Override
-    public Mono<Void> filter(final ServerWebExchange exchange,final WebFilterChain chain) {
+    public Mono<Void> filter(final ServerWebExchange exchange, final WebFilterChain chain) {
         var request = exchange.getRequest();
         var response = exchange.getResponse();
 
         if (!requiresAuthentication(request)) {
             return chain.filter(exchange);
+        }
+        if (loginAttemptsService.isMaxLoggingAttemptsCountAchieved(request)) {
+            return Mono.error(() -> new ClientErrorException(Error.CodeEnum.FORBIDDEN,
+                    "Too many login attempts"));
         }
 
         return attemptAuthentication(request)
@@ -45,6 +54,8 @@ public class AuthenticationJwtTokenWebFilter implements WebFilter {
                     successfulAuthentication(response, (User) userDetails);
                     return chain.filter(exchange);
                 })
+                .doOnError(PasswordAuthException.class,
+                        e -> loginAttemptsService.updateCurrentLoginAttemptsCount(request))
                 .onErrorResume(Mono::error);
     }
 

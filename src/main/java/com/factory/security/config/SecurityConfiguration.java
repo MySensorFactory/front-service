@@ -2,10 +2,11 @@ package com.factory.security.config;
 
 import com.factory.config.ApiGatewayConfiguration;
 import com.factory.config.PathConfig;
-import com.factory.security.config.filter.AuthenticationJwtTokenWebFilter;
-import com.factory.security.config.filter.ProcessingJwtTokenWebFilter;
+import com.factory.security.filter.AuthenticationJwtTokenWebFilter;
+import com.factory.security.filter.ProcessingJwtTokenWebFilter;
 import com.factory.security.repository.SecurityContextRepository;
 import com.factory.security.service.JwtTokenProvider;
+import com.factory.security.service.LoginAttemptsService;
 import com.factory.security.service.RemoteUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +33,7 @@ public class SecurityConfiguration {
     private final RemoteUserDetailsService remoteUserDetailsService;
     private final ApiGatewayConfiguration apiGatewayConfiguration;
     private final PathConfig pathConfig;
+    private final LoginAttemptsService loginAttemptsService;
 
     // @formatter:off
     @Bean
@@ -62,7 +64,11 @@ public class SecurityConfiguration {
 
                     .anyExchange().authenticated()
                 .and()
-                .addFilterAt(new AuthenticationJwtTokenWebFilter(jwtTokenProvider,remoteUserDetailsService, pathConfig),
+                .addFilterAt(new AuthenticationJwtTokenWebFilter(
+                                jwtTokenProvider,
+                                remoteUserDetailsService,
+                                pathConfig,
+                                loginAttemptsService),
                         SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterBefore(new ProcessingJwtTokenWebFilter(authenticationManager, apiGatewayConfiguration.pathConfig()),
                         SecurityWebFiltersOrder.AUTHENTICATION)
