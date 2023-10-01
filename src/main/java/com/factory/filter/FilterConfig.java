@@ -33,6 +33,8 @@ public class FilterConfig {
                                         .rewritePath(pathConfig.getCreateAccount().getFromPath(),
                                                 pathConfig.getCreateAccount().getToPath())
                                         .modifyRequestBody(String.class, String.class,
+                                                new CreateUserRequestRolesFilter(objectMapper))
+                                        .modifyRequestBody(String.class, String.class,
                                                 new CreateUserRequestBodyPasswordEncodeFilter(objectMapper, passwordEncoder))
                                 )
                                 .uri(pathConfig.getCreateAccount().getTargetService()))
