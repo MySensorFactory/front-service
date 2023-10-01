@@ -1,4 +1,4 @@
-package com.factory.security.config.filter;
+package com.factory.security.filter;
 
 import com.factory.config.PathConfig;
 import lombok.RequiredArgsConstructor;

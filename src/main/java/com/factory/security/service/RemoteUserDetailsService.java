@@ -24,7 +24,8 @@ public class RemoteUserDetailsService {
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public Mono<UserDetails> loadUser(final String username, final String password) throws UsernameNotFoundException {
+    public Mono<UserDetails> loadUser(final String username, final String password)
+            throws UsernameNotFoundException, PasswordAuthException, ClientErrorException {
         return usersClient.getUserDetails(username)
                 .flatMap(response -> {
                     if (isWrongPassword(password, response)) {

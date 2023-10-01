@@ -1,4 +1,4 @@
-package com.factory.security.config.manager;
+package com.factory.security.manager;
 
 import com.factory.security.dto.AccessToken;
 import com.factory.security.service.JwtTokenProvider;
