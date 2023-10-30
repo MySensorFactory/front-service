@@ -6,6 +6,7 @@ spec:
   selector:
     app: front-service-deployment
   ports:
-    - protocol: TCP
-      port: 30002
-      targetPort: 30002
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
