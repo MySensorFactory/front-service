@@ -1,5 +1,5 @@
 server:
-  port: 9399
+  port: 8080
 spring:
   main:
     web-application-type: reactive
@@ -7,19 +7,19 @@ spring:
     gateway:
       routes:
         - id: data-service
-          uri: http://localhost:9099
+          uri: http://data-service-svc:8080
           predicates:
             - Path=/data/**
           filters:
             - RewritePath=/data/(?<path>.*), /$\{path}
         - id: data-service-documentation
-          uri: http://localhost:9099
+          uri: http://data-service-svc:8080
           predicates:
             - Path=/docs/data
           filters:
             - RewritePath=/docs/data, /v3/api-docs
         - id: users-service-documentation
-          uri: http://localhost:9299
+          uri: http://users-service-svc:8080
           predicates:
             - Path=/docs/users
           filters:
@@ -30,7 +30,7 @@ config:
     enabled: true
     fromPath: '/users/users'
     toPath: '/users'
-    targetService: 'http://127.0.0.1:9299'
+    targetService: 'http://users-service-svc:8080'
   accessTokenAcquirablePaths:
     - '/login'
     - '/login/**'
@@ -45,7 +45,7 @@ config:
 
 clients:
   user:
-    url: http://localhost:9299
+    url: http://users-service-svc:8080
     userDetailsPath: '/users/{userName}'
 
 jwt:
