@@ -5,7 +5,7 @@ metadata:
   namespace: factory
 spec:
   selector:
-    app: front-service-deployment
+    app: front-service
   ports:
     - name: http
       protocol: TCP
