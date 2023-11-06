@@ -1,3 +1,4 @@
 order:
+  - ing.yml
   - svc.yml
   - deploy.yml
