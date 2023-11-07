@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: front-secrets
+  namespace: factory
+  labels:
+    app: front-service
+data:
+  JWT_SECRET : $(echo -n "`aws ssm get-parameter --name /CICD/JWT_SECRET --with-decrypt --region=eu-central-1 --output text --query Parameter.Value`")

@@ -49,7 +49,7 @@ clients:
     userDetailsPath: '/users/{userName}'
 
 jwt:
-  jwtSecret: abc123sajdfisadnfuisndufinhdssvfmdsaiofnhuad9fhuew0nio9adnhfi9oeqfoadnvfopgkmpwomgi0mgisofmgifsogmfdi0ognm53490hg3u9nh3nhe9tighkjr23423432rt2g54y45h45yh4egergh35gerg35h4rth
+  jwtSecret: ${JWT_SECRET}
   jwtAccessTokenExpirationInMs: 600000
   jwtRefreshTokenExpirationInMs: 1200000
 

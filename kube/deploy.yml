@@ -21,3 +21,9 @@ spec:
           image: juliantheking/front-service
           ports:
             - containerPort: 8080
+          env:
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: front-secrets
+                  key: POSTRGES_DB
