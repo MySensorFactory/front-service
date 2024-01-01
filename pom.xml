@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.factory</groupId>
         <artifactId>factory-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
         <relativePath/>
     </parent>
 
@@ -60,6 +60,10 @@
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
             <version>${reactor-test.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
         </dependency>
     </dependencies>
 

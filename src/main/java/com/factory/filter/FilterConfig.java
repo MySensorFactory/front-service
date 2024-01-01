@@ -1,5 +1,6 @@
 package com.factory.filter;
 
+import com.factory.config.ApiGatewayConfiguration;
 import com.factory.config.PathConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -24,18 +25,25 @@ public class FilterConfig {
     private final PathConfig pathConfig;
 
     @Bean
-    public RouteLocator routes(RouteLocatorBuilder builder) {
+    public RouteLocator routes(final RouteLocatorBuilder builder,
+                               final ApiGatewayConfiguration apiGatewayConfiguration) {
         return builder
                 .routes()
                 .route(FILTER_ID,
                         r -> r.path(pathConfig.getCreateAccount().getFromPath())
-                                .filters(f -> f
-                                        .rewritePath(pathConfig.getCreateAccount().getFromPath(),
-                                                pathConfig.getCreateAccount().getToPath())
-                                        .modifyRequestBody(String.class, String.class,
-                                                new CreateUserRequestRolesFilter(objectMapper))
-                                        .modifyRequestBody(String.class, String.class,
-                                                new CreateUserRequestBodyPasswordEncodeFilter(objectMapper, passwordEncoder))
+                                .filters(f -> {
+                                            f
+                                                    .rewritePath(pathConfig.getCreateAccount().getFromPath(),
+                                                            pathConfig.getCreateAccount().getToPath())
+                                                    .modifyRequestBody(String.class, String.class,
+                                                            new CreateUserRequestRolesFilter(objectMapper));
+                                            if (!apiGatewayConfiguration.appSecurityConfig().getUseKeycloak()) {
+                                                f
+                                                        .modifyRequestBody(String.class, String.class,
+                                                                new CreateUserRequestBodyPasswordEncodeFilter(objectMapper, passwordEncoder));
+                                            }
+                                            return f;
+                                        }
                                 )
                                 .uri(pathConfig.getCreateAccount().getTargetService()))
                 .build();

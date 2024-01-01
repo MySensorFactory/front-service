@@ -7,12 +7,15 @@ import com.factory.security.repository.SecurityContextRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Mono;
 
@@ -30,36 +33,50 @@ public class SecurityConfiguration {
 
     // @formatter:off
     @Bean
-    public SecurityWebFilterChain securitygWebFilterChain(final ServerHttpSecurity http) {
-        return http
+    public SecurityWebFilterChain securityWebFilterChain(final ServerHttpSecurity http,
+                                                         final Converter<Jwt, Mono<AbstractAuthenticationToken>> jwtAuthenticationConverter) {
+        http
                 .csrf().disable()
                 .exceptionHandling()
                     .authenticationEntryPoint((swe, e) ->
                             Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED))
                     ).accessDeniedHandler((swe, e) ->
                             Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN))
-                ).and()
+                )
+                .and()
                 .formLogin().disable()
-                .httpBasic().disable()
-                .authenticationManager(authenticationManager)
-                .securityContextRepository(securityContextRepository)
+                .httpBasic().disable();
+
+        if (apiGatewayConfiguration.appSecurityConfig().getUseKeycloak()){
+            http
+                    .oauth2ResourceServer()
+                    .jwt()
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter);
+        }
+        else {
+            http
+                    .authenticationManager(authenticationManager)
+                    .securityContextRepository(securityContextRepository)
+                    .addFilterBefore(new ProcessingJwtTokenWebFilter(authenticationManager, pathConfig),
+                            SecurityWebFiltersOrder.AUTHENTICATION);
+        }
+
+        http
                 .authorizeExchange()
                     .pathMatchers(HttpMethod.OPTIONS).permitAll()
                     .pathMatchers(pathConfig.getPublicPaths().toArray(new String[0])).permitAll()
 
                     .pathMatchers("/data/**").hasRole(DATA_ACCESSOR)
 
-                    .pathMatchers(HttpMethod.GET,"/users/{userName}").authenticated()
-                    .pathMatchers(HttpMethod.PATCH, "/users/{userName}").hasRole(ADMIN)
-                    .pathMatchers(HttpMethod.POST, "/users/{userName}/activate").hasRole(ADMIN)
+                    .pathMatchers(HttpMethod.GET,"/users/users/{userName}").authenticated()
+                    .pathMatchers(HttpMethod.PATCH, "/users/users/{userName}").hasRole(ADMIN)
+                    .pathMatchers(HttpMethod.POST, "/users/users/{userName}/activate").hasRole(ADMIN)
 
                     .pathMatchers("/roles/**").hasRole(ADMIN)
 
-                    .anyExchange().authenticated()
-                .and()
-                .addFilterBefore(new ProcessingJwtTokenWebFilter(authenticationManager, apiGatewayConfiguration.pathConfig()),
-                        SecurityWebFiltersOrder.AUTHENTICATION)
-                .build();
+                    .anyExchange().authenticated();
+
+                return http.build();
     }
     // @formatter:on
 }

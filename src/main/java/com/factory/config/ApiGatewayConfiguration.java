@@ -18,4 +18,11 @@ public class ApiGatewayConfiguration {
     public UsersClientConfig usersClientConfig(){
         return new UsersClientConfig();
     }
+
+    @Bean
+    @ConfigurationProperties("app.security")
+    public AppSecurityConfig appSecurityConfig(){
+        return new AppSecurityConfig();
+    }
+
 }
